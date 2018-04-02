@@ -16,35 +16,43 @@ class CardsViewController: UIViewController {
         // Do any additional setup after loading the view, typically from a nib.
     }
     @IBAction func didPanImage(_ sender: UIPanGestureRecognizer) {
-        let translation = sender.translation(in: view)
-        let xFromCenter = cardImageView.center.x - view.center.x
+        let translate = sender.translation(in: view)
         
-        if sender.state == .began {
-            cardOriginalCenter = cardImageView.center
-            print("Gesture began")
-        } else if sender.state == .changed {
-            cardImageView.center = CGPoint(x: cardOriginalCenter.x + translation.x, y: cardOriginalCenter.y )
-            if xFromCenter > 0 {
-                cardImageView.transform = CGAffineTransform(rotationAngle: CGFloat(Double(xFromCenter) * Double.pi / 360))
-            }else{
-                cardImageView.transform = CGAffineTransform(rotationAngle: CGFloat(Double(xFromCenter) * Double.pi / 360))
-            }
-            print(cardImageView.center.x)
-            print("Gesture is changing")
-        } else if sender.state == .ended {
+        if sender.state == .began{
+            cardOriginalCenter = self.cardImageView.center
+        }
             
-            if cardImageView.center.x < 75 {
-                UIView.animate(withDuration: 0.3, animations: {
-                    self.cardImageView.center = CGPoint(x: self.cardImageView.center.x - 200, y: self.cardImageView.center.y + 75)
-                    self.cardImageView.alpha = 0
-                })
-            } else if cardImageView.center.x > (view.frame.width - 75) {
-                UIView.animate(withDuration: 0.3, animations: {
-                    self.cardImageView.center = CGPoint(x: self.cardImageView.center.x + 200, y: self.cardImageView.center.y + 75)
-                    self.cardImageView.alpha = 0
+        else if sender.state == .changed{
+            self.cardImageView.center = CGPoint(x: cardOriginalCenter.x + translate.x, y: cardOriginalCenter.y + translate.y)
+            self.cardImageView.transform = CGAffineTransform(rotationAngle: translate.x / 20 * (CGFloat.pi / 180.0))
+            print("Translate x: \(translate.x)")
+        }
+            
+        else if sender.state == .ended{
+            
+            if(translate.x > 100){
+                UIView.animate(withDuration: 0.25, animations: {
+                    self.cardImageView.transform = self.cardImageView.transform.translatedBy(x: 400, y: 0)
+                }, completion: { (done) in
+                    self.cardImageView.removeFromSuperview()
                 })
             }
-            print("Gesture ended")
+            else if(translate.x < -100){
+                UIView.animate(withDuration: 0.25, animations: {
+                    self.cardImageView.transform = self.cardImageView.transform.translatedBy(x: -400, y: 0)
+                }, completion: { (done) in
+                    self.cardImageView.removeFromSuperview()
+                })
+            }
+                
+            else{
+                UIView.animate(withDuration: 0.4, animations: {
+                    self.cardImageView.center = self.cardOriginalCenter
+                    self.cardImageView.transform = CGAffineTransform.identity
+                }, completion: { (done) in
+                    
+                })
+            }
         }
     }
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
